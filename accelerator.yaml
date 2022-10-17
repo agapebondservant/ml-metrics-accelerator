@@ -1,0 +1,13 @@
+accelerator:
+  displayName: ML Metrics Accelerator
+  description: Prometheus exporter for specific ML metrics,
+  as well as pre-built Grafana dashboards for visualizing the metrics
+  iconUrl: https://pic.onlinewebfonts.com/svg/img_523704.png
+  tags:
+  - "MLAI"
+  - "ML"
+  - "AI"
+  - "Metrics"
+  - "Data"
+  - "Science"
+  - "Analytics"
