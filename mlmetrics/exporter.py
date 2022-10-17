@@ -15,16 +15,16 @@ def prepare_counter(name, description, tags, value):
     c.set(value)
 
 
-def prepare_gauges(name, description, tags, value):
+def prepare_gauge(name, description, tags, value):
     g = Gauge(name, description, tags, registry=registry)
     g.set(value)
 
 
-def prepare_histograms(name, description, tags, value):
+def prepare_histogram(name, description, tags, value):
     h = Histogram(name, description, tags, registry=registry)
     h.observe(value)
 
 
-def prepare_summaries(name, description, tags, value):
+def prepare_summary(name, description, tags, value):
     g = Summary(name, description, tags, registry=registry)
     g.observe(value)
