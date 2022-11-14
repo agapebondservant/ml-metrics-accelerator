@@ -39,29 +39,30 @@ async def expose_metrics_rsocket(connection):
 
     logger.info("Starting rsocket request-response client...")
 
-    async with RSocketClient(single_transport_provider(TransportTCP(*connection)), ClientHandler) as client:
+    client = RSocketClient(single_transport_provider(TransportTCP(*connection)))
+    client.set_handler_using_factory(ClientHandler)
 
-        async def run_request_response():
+    async def run_request_response():
 
-            try:
-                while True:
-                    sent = generate_latest(registry)
-                    if sent is not None:
-                        logger.info(f"Data to send: {sent}")
-                        payload = Payload(sent)
-                        result = await client.request_response(payload)
-                        received = result.data
+        try:
+            while True:
+                sent = generate_latest(registry)
+                if sent is not None:
+                    logger.info(f"Data to send: {sent}")
+                    payload = Payload(sent)
+                    result = await client.request_response(payload)
+                    received = result.data
 
-                        time_received = datetime.datetime.strptime(received.decode(), b'%Y-%m-%d %H:%M:%S'.decode())
-                        logger.info(f'Response: {time_received}')
+                    time_received = datetime.datetime.strptime(received.decode(), b'%Y-%m-%d %H:%M:%S'.decode())
+                    logger.info(f'Response: {time_received}')
 
-                    # Use SCDF default scrape interval of 10s
-                    await asyncio.sleep(10)
-            except Exception as e:
-                logger.error('Error occurred: ', exc_info=True)
-                pass
+                # Use SCDF default scrape interval of 10s
+                await asyncio.sleep(10)
+        except Exception as e:
+            logger.error('Error occurred: ', exc_info=True)
+            pass
 
-        await run_request_response()
+    await run_request_response()
 
 
 def prepare_counter(name, description, tags, value):
