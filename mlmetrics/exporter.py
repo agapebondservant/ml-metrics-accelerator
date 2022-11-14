@@ -34,12 +34,14 @@ async def expose_metrics_rsocket(connection):
 
     class ClientHandler(BaseRequestHandler):
         async def request_response(self, p: Payload):
-            return create_future(Payload(b'(client ' + p.data + b')',
-                                         b'(client ' + p.metadata + b')'))
+            return create_future(Payload(b'' + p.data + b'',
+                                         b'' + p.metadata + b''))
 
     logger.info("Starting rsocket request-response client...")
 
     async with RSocketClient(single_transport_provider(TransportTCP(*connection)), handler_factory=ClientHandler) as client:
+
+        logger.info(f'handler: {client.handler_factory}')
 
         async def run_request_response():
 
