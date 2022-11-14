@@ -33,7 +33,15 @@ async def expose_metrics_rsocket(connection):
     global registry
 
     class ClientHandler(BaseRequestHandler):
+        def __init__(self,
+                     *args,
+                     **kwargs):
+            logger.info(f"Initializing ClientHandler: {args} {kwargs}")
+            super(ClientHandler, self).__init__(*args, **kwargs)
+            logger.info("ClientHandler initialized.")
+
         async def request_response(self, p: Payload):
+            logger.info("In request_response method...")
             return create_future(Payload(b'' + p.data + b'',
                                          b'' + p.metadata + b''))
 
