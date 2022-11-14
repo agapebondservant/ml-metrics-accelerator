@@ -22,7 +22,7 @@ def expose_metrics():
 
 
 async def get_rsync_connection(proxy_host, proxy_port):
-    logger.info(f"Getting rsync connection - proxy host {proxy_host}, proxy_port {proxy_port}...")
+    logger.info(f"Getting rsocket connection - proxy host {proxy_host}, proxy_port {proxy_port}...")
     connection = await asyncio.open_connection(proxy_host, proxy_port)
     return connection
 
@@ -52,7 +52,7 @@ async def expose_metrics_rsocket(connection):
                 logger.error('Error occurred: ', exc_info=True)
                 pass
 
-        asyncio.run(run_request_response())
+        await run_request_response()
 
 
 def prepare_counter(name, description, tags, value):
