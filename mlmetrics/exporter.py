@@ -12,6 +12,7 @@ app = FastAPI()
 registry = CollectorRegistry()
 logger = logging.getLogger('mlmetrics')
 logger.setLevel(logging.INFO)
+assigned_metrics = {}
 
 
 @app.get('/metrics')
@@ -55,24 +56,28 @@ async def expose_metrics_rsocket(connection):
 
 
 def prepare_counter(name, description, tags, value):
-    global registry
-    c = Counter(name, description, tags, registry=registry)
-    c.set(value)
+    global registry, assigned_metrics
+    if not assigned_metrics[name]:
+        assigned_metrics[name] = Counter(name, description, tags, registry=registry)
+    assigned_metrics[name].set(value)
 
 
 def prepare_gauge(name, description, tags, value):
-    global registry
-    g = Gauge(name, description, tags, registry=registry)
-    g.set(value)
+    global registry, assigned_metrics
+    if not assigned_metrics[name]:
+        assigned_metrics[name] = Gauge(name, description, tags, registry=registry)
+    assigned_metrics.set(value)
 
 
 def prepare_histogram(name, description, tags, value):
-    global registry
-    h = Histogram(name, description, tags, registry=registry)
-    h.observe(value)
+    global registry, assigned_metrics
+    if not assigned_metrics[name]:
+        assigned_metrics[name] = Histogram(name, description, tags, registry=registry)
+    assigned_metrics.observe(value)
 
 
 def prepare_summary(name, description, tags, value):
-    global registry
-    g = Summary(name, description, tags, registry=registry)
-    g.observe(value)
+    global registry, assigned_metrics
+    if not assigned_metrics[name]:
+        assigned_metrics[name] = Summary(name, description, tags, registry=registry)
+    assigned_metrics.observe(value)
