@@ -66,18 +66,18 @@ def prepare_gauge(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Gauge(name, description, tags, registry=registry)
-    assigned_metrics.set(value)
+    assigned_metrics[name].set(value)
 
 
 def prepare_histogram(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Histogram(name, description, tags, registry=registry)
-    assigned_metrics.observe(value)
+    assigned_metrics[name].observe(value)
 
 
 def prepare_summary(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Summary(name, description, tags, registry=registry)
-    assigned_metrics.observe(value)
+    assigned_metrics[name].observe(value)
