@@ -41,7 +41,7 @@ async def expose_metrics_rsocket(connection):
 
     async with RSocketClient(single_transport_provider(TransportTCP(*connection)), handler_factory=ClientHandler) as client:
 
-        logger.info(f'handler: {client.handler_factory}')
+        logger.info(f'client: {client}')
 
         async def run_request_response():
 
