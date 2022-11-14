@@ -4,6 +4,8 @@ from rsocket.rsocket_client import RSocketClient
 from rsocket.transports.tcp import TransportTCP
 from rsocket.helpers import single_transport_provider
 from rsocket.payload import Payload
+from rsocket.request_handler import BaseRequestHandler
+from rsocket.helpers import create_future
 import datetime
 import asyncio
 import logging
@@ -34,6 +36,13 @@ async def expose_metrics_rsocket(connection):
     async with RSocketClient(single_transport_provider(TransportTCP(*connection))) as client:
 
         async def run_request_response():
+            class ClientHandler(BaseRequestHandler):
+                async def request_response(self, p: Payload):
+                    return create_future(Payload(b'(client ' + p.data + b')',
+                                                 b'(client ' + p.metadata + b')'))
+
+            client.set_handler_using_factory(ClientHandler)
+
             try:
                 while True:
                     sent = generate_latest(registry)
