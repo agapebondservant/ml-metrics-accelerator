@@ -32,16 +32,16 @@ async def get_rsync_connection(proxy_host, proxy_port):
 async def expose_metrics_rsocket(connection):
     global registry
 
+    class ClientHandler(BaseRequestHandler):
+        async def request_response(self, p: Payload):
+            return create_future(Payload(b'(client ' + p.data + b')',
+                                         b'(client ' + p.metadata + b')'))
+
     logger.info("Starting rsocket request-response client...")
-    async with RSocketClient(single_transport_provider(TransportTCP(*connection))) as client:
+
+    async with RSocketClient(single_transport_provider(TransportTCP(*connection)), ClientHandler) as client:
 
         async def run_request_response():
-            class ClientHandler(BaseRequestHandler):
-                async def request_response(self, p: Payload):
-                    return create_future(Payload(b'(client ' + p.data + b')',
-                                                 b'(client ' + p.metadata + b')'))
-
-            client.set_handler_using_factory(ClientHandler)
 
             try:
                 while True:
