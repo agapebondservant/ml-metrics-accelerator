@@ -35,22 +35,19 @@ async def expose_metrics_rsocket(connection):
 
     class ClientHandler(BaseRequestHandler):
 
-        log = logging.getLogger('ClientHandler')
-        log.setLevel(logging.INFO)
-
         def __init__(self):
             self.received = asyncio.Event()
             self.received_payload: Optional[Payload] = None
+            self.log = logging.getLogger('ClientHandler')
+            self.log.setLevel(logging.INFO)
 
         async def request_response(self, payload: Payload):
-            nonlocal log
-            log.info("In request_response method...")
+            self.log.info("In request_response method...")
             return create_future(Payload(b'' + payload.data + b'',
                                          b'' + payload.metadata + b''))
 
         async def request_fire_and_forget(self, payload: Payload):
-            nonlocal log
-            log.info("In request_fire_and_forget method...")
+            self.log.info("In request_fire_and_forget method...")
             self.received_payload = payload
             self.received.set()
 
@@ -64,20 +61,20 @@ async def expose_metrics_rsocket(connection):
 
         async def run_request_response():
 
-            try:
-                while True:
+            while True:
+                try:
                     sent = generate_latest(registry)
                     if sent:
                         logger.info(f"Data to send: {sent}")
                         payload = Payload(sent)
                         client.request_fire_and_forget(payload)
                         logger.info(f'Data sent.')
-
+                except Exception as e:
+                    logger.error('Error occurred: ', exc_info=True)
+                    pass
+                finally:
                     # Use SCDF default scrape interval of 10s
                     await asyncio.sleep(10)
-            except Exception as e:
-                logger.error('Error occurred: ', exc_info=True)
-                pass
 
         await run_request_response()
 
