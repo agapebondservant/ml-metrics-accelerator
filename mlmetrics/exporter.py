@@ -33,17 +33,37 @@ async def expose_metrics_rsocket(connection):
     global registry
 
     class ClientHandler(RequestHandler):
-        def __init__(self,
-                     *args,
-                     **kwargs):
-            logger.info(f"Initializing ClientHandler: {args} {kwargs}")
-            super(ClientHandler, self).__init__(*args, **kwargs)
-            logger.info("ClientHandler initialized.")
-
         async def request_response(self, p: Payload):
             logger.info("In request_response method...")
             return create_future(Payload(b'' + p.data + b'',
                                          b'' + p.metadata + b''))
+
+        async def on_setup(self, data_encoding: bytes, metadata_encoding: bytes, payload: Payload):
+            """Nothing to do on setup by default"""
+
+        async def request_channel(self, payload: Payload):
+            raise RuntimeError('Not implemented')
+
+        async def request_fire_and_forget(self, payload: Payload):
+            """The requester isn't listening for errors.  Nothing to do."""
+
+        async def on_metadata_push(self, payload: Payload):
+            """Nothing by default"""
+
+        async def request_stream(self, payload: Payload):
+            raise RuntimeError('Not implemented')
+
+        async def on_error(self, error_code, payload: Payload):
+            logger().error('Error handler: %s, %s', error_code.name, payload)
+
+        async def on_connection_error(self, rsocket, exception):
+            pass
+
+        async def on_close(self, rsocket, exception):
+            pass
+
+        async def on_keepalive_timeout(self, time_since_last_keepalive, rsocket):
+            pass
 
     logger.info("Starting rsocket request-response client...")
 
