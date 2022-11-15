@@ -71,12 +71,11 @@ async def expose_metrics_rsocket(connection):
                         logger.info(f'Data sent.')
                 except Exception as e:
                     logger.error('Error occurred: ', exc_info=True)
-                    pass
                 finally:
                     # Use SCDF default scrape interval of 10s
                     await asyncio.sleep(10)
 
-        await run_request_response()
+        asyncio.create_task(run_request_response())
 
 
 def prepare_counter(name, description, tags, value):
