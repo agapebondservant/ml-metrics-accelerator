@@ -55,7 +55,7 @@ async def expose_metrics_rsocket(connection):
 
     logger.info("Starting rsocket request-response client...")
 
-    async with RSocketClient(single_transport_provider(TransportTCP(*connection)), handler_factory=ClientHandler) as client:
+    async with RSocketClient(single_transport_provider(TransportTCP(*connection))) as client:
 
         client.set_handler_using_factory(ClientHandler)
 
@@ -69,7 +69,7 @@ async def expose_metrics_rsocket(connection):
                     if sent:
                         logger.info(f"Data to send: {sent}")
                         payload = Payload(sent)
-                        client.request_fire_and_forget(payload)
+                        client.fire_and_forget(payload)
                         logger.info(f'Data sent.')
                 except Exception as e:
                     logger.error('Error occurred: ', exc_info=True)
