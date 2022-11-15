@@ -4,11 +4,12 @@ from rsocket.rsocket_client import RSocketClient
 from rsocket.transports.tcp import TransportTCP
 from rsocket.helpers import single_transport_provider
 from rsocket.payload import Payload
-from rsocket.request_handler import RequestHandler
+from rsocket.request_handler import BaseRequestHandler
 from rsocket.helpers import create_future
 import datetime
 import asyncio
 import logging
+from typing import Optional
 
 app = FastAPI()
 registry = CollectorRegistry()
@@ -32,42 +33,32 @@ async def get_rsync_connection(proxy_host, proxy_port):
 async def expose_metrics_rsocket(connection):
     global registry
 
-    class ClientHandler(RequestHandler):
-        async def request_response(self, p: Payload):
-            logger.info("In request_response method...")
-            return create_future(Payload(b'' + p.data + b'',
-                                         b'' + p.metadata + b''))
+    class ClientHandler(BaseRequestHandler):
 
-        async def on_setup(self, data_encoding: bytes, metadata_encoding: bytes, payload: Payload):
-            """Nothing to do on setup by default"""
+        log = logging.getLogger('ClientHandler')
+        log.setLevel(logging.INFO)
 
-        async def request_channel(self, payload: Payload):
-            raise RuntimeError('Not implemented')
+        def __init__(self):
+            self.received = asyncio.Event()
+            self.received_payload: Optional[Payload] = None
+
+        async def request_response(self, payload: Payload):
+            nonlocal log
+            log.info("In request_response method...")
+            return create_future(Payload(b'' + payload.data + b'',
+                                         b'' + payload.metadata + b''))
 
         async def request_fire_and_forget(self, payload: Payload):
-            """The requester isn't listening for errors.  Nothing to do."""
-
-        async def on_metadata_push(self, payload: Payload):
-            """Nothing by default"""
-
-        async def request_stream(self, payload: Payload):
-            raise RuntimeError('Not implemented')
-
-        async def on_error(self, error_code, payload: Payload):
-            logger().error('Error handler: %s, %s', error_code.name, payload)
-
-        async def on_connection_error(self, rsocket, exception):
-            pass
-
-        async def on_close(self, rsocket, exception):
-            pass
-
-        async def on_keepalive_timeout(self, time_since_last_keepalive, rsocket):
-            pass
+            nonlocal log
+            log.info("In request_fire_and_forget method...")
+            self.received_payload = payload
+            self.received.set()
 
     logger.info("Starting rsocket request-response client...")
 
     async with RSocketClient(single_transport_provider(TransportTCP(*connection)), handler_factory=ClientHandler) as client:
+
+        client.set_handler_using_factory(ClientHandler)
 
         logger.info(f'client: {client}')
 
@@ -76,14 +67,11 @@ async def expose_metrics_rsocket(connection):
             try:
                 while True:
                     sent = generate_latest(registry)
-                    if sent is not None:
+                    if sent:
                         logger.info(f"Data to send: {sent}")
                         payload = Payload(sent)
-                        result = await client.request_response(payload)
-                        received = result.data
-
-                        time_received = datetime.datetime.strptime(received.decode(), b'%Y-%m-%d %H:%M:%S'.decode())
-                        logger.info(f'Response: {time_received}')
+                        client.request_fire_and_forget(payload)
+                        logger.info(f'Data sent.')
 
                     # Use SCDF default scrape interval of 10s
                     await asyncio.sleep(10)
