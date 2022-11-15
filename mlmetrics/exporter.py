@@ -10,6 +10,8 @@ import datetime
 import asyncio
 import logging
 from typing import Optional
+import nest_asyncio
+nest_asyncio.apply()
 
 app = FastAPI()
 registry = CollectorRegistry()
