@@ -4,7 +4,7 @@ from rsocket.rsocket_client import RSocketClient
 from rsocket.transports.tcp import TransportTCP
 from rsocket.helpers import single_transport_provider
 from rsocket.payload import Payload
-from rsocket.request_handler import BaseRequestHandler
+from rsocket.request_handler import RequestHandler
 from rsocket.helpers import create_future
 import datetime
 import asyncio
@@ -32,7 +32,7 @@ async def get_rsync_connection(proxy_host, proxy_port):
 async def expose_metrics_rsocket(connection):
     global registry
 
-    class ClientHandler(BaseRequestHandler):
+    class ClientHandler(RequestHandler):
         def __init__(self,
                      *args,
                      **kwargs):
