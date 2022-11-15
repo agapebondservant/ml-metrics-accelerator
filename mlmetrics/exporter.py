@@ -38,30 +38,34 @@ async def expose_metrics_rsocket(connection):
     class ClientHandler(BaseRequestHandler):
 
         def __init__(self):
-            self.received = asyncio.Event()
-            self.received_payload: Optional[Payload] = None
             self.log = logging.getLogger('ClientHandler')
             self.log.setLevel(logging.INFO)
+            # self.received = asyncio.Event()
+            # self.received_payload: Optional[Payload] = None
 
         async def request_response(self, payload: Payload):
-            self.log.info("In request_response method...")
-            return create_future(Payload(b'' + payload.data + b'',
-                                         b'' + payload.metadata + b''))
+            try:
+                key = payload.data if payload else None
+                self.log.info(f"In request_response method...{key}")
+                sent = generate_latest(registry)
+                self.log.info(f"Metrics data...{sent}")
+                return create_future(Payload(sent))
+            except Exception as e:
+                logger.error('Error occurred: ', exc_info=True)
 
-        async def request_fire_and_forget(self, payload: Payload):
-            self.log.info("In request_fire_and_forget method...")
-            self.received_payload = payload
-            self.received.set()
+        # async def request_fire_and_forget(self, payload: Payload):
+        #    self.log.info("In request_fire_and_forget method...")
+        #    self.log.info(f"{payload} {payload.data}") if payload else True
+        #    self.received_payload = payload
+        #    self.received.set()
 
     logger.info("Starting rsocket request-response client...")
 
-    async with RSocketClient(single_transport_provider(TransportTCP(*connection))) as client:
+    async with RSocketClient(single_transport_provider(TransportTCP(*connection)), handler_factory=ClientHandler) as client:
 
         client.set_handler_using_factory(ClientHandler)
 
-        logger.info(f'client: {client}')
-
-        async def run_request_response():
+        """async def run_request_response():
 
             while True:
                 try:
@@ -69,7 +73,9 @@ async def expose_metrics_rsocket(connection):
                     if sent:
                         logger.info(f"Data to send: {sent}")
                         payload = Payload(sent)
-                        client.fire_and_forget(payload)
+                        # client.fire_and_forget(payload)
+                        # result = await client.request_response(payload)
+                        # key = result.data
                         logger.info(f'Data sent.')
                 except Exception as e:
                     logger.error('Error occurred: ', exc_info=True)
@@ -77,7 +83,7 @@ async def expose_metrics_rsocket(connection):
                     # Use SCDF default scrape interval of 10s
                     await asyncio.sleep(10)
 
-        asyncio.run(run_request_response())
+        asyncio.run(run_request_response())"""
 
 
 def prepare_counter(name, description, tags, value):
