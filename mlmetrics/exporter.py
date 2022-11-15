@@ -75,7 +75,7 @@ async def expose_metrics_rsocket(connection):
                     # Use SCDF default scrape interval of 10s
                     await asyncio.sleep(10)
 
-        asyncio.create_task(run_request_response())
+        asyncio.run(run_request_response())
 
 
 def prepare_counter(name, description, tags, value):
