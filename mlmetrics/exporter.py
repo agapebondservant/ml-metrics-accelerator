@@ -51,7 +51,9 @@ async def expose_metrics_rsocket(connection):
                 decoded_key = cryptoutils.decode_public_key(key)
                 self.log.info(f"Encrypted key - {decoded_key}")
 
-                raw_data = generate_latest(registry)
+                raw_data = None
+                while not raw_data:
+                    raw_data = generate_latest(registry)
                 encrypted_payload = cryptoutils.encrypt_payload(raw_data, decoded_key)
 
                 self.log.info(f"Metrics data to encrypt...data:{encrypted_payload.data}\nmetadata:{encrypted_payload.metadata}")
