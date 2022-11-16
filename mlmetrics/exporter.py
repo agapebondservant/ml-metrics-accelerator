@@ -40,15 +40,17 @@ async def expose_metrics_rsocket(connection):
         def __init__(self):
             self.log = logging.getLogger('ClientHandler')
             self.log.setLevel(logging.INFO)
+            self.key = None
             # self.received = asyncio.Event()
             # self.received_payload: Optional[Payload] = None
 
         async def request_response(self, payload: Payload):
             try:
-                key = payload.data if payload else None
-                self.log.info(f"In request_response method...key - {key}")
+                if not self.key:
+                    self.key = payload.data if payload else None
+                self.log.info(f"In request_response method...key - {self.key}")
 
-                decoded_key = cryptoutils.decode_public_key(key)
+                decoded_key = cryptoutils.decode_public_key(self.key)
                 self.log.info(f"Encrypted key - {decoded_key}")
 
                 raw_data = None
