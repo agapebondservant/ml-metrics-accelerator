@@ -46,20 +46,21 @@ async def expose_metrics_rsocket(connection):
 
         async def request_response(self, payload: Payload):
             try:
-                if not self.key:
-                    self.key = payload.data if payload else None
-                self.log.info(f"In request_response method...key - {self.key}")
+                # if not self.key:
+                #    self.key = payload.data if payload else None
+                if payload:
+                    self.log.info(f"In request_response method...key - {self.key}")
 
-                decoded_key = cryptoutils.decode_public_key(self.key)
-                self.log.info(f"Encrypted key - {decoded_key}")
+                    decoded_key = cryptoutils.decode_public_key(self.key)
+                    self.log.info(f"Encrypted key - {decoded_key}")
 
-                raw_data = None
-                while not raw_data:
-                    raw_data = generate_latest(registry)
-                encrypted_payload = cryptoutils.encrypt_payload(raw_data, decoded_key)
+                    raw_data = None
+                    while not raw_data:
+                        raw_data = generate_latest(registry)
+                    encrypted_payload = cryptoutils.encrypt_payload(raw_data, decoded_key)
 
-                self.log.info(f"Metrics data to encrypt...data:{encrypted_payload.data}\nmetadata:{encrypted_payload.metadata}")
-                return create_future(encrypted_payload)
+                    self.log.info(f"Metrics data to encrypt...data:{encrypted_payload.data}\nmetadata:{encrypted_payload.metadata}")
+                    return create_future(encrypted_payload)
             except Exception as e:
                 logger.error('Error occurred: ', exc_info=True)
 
