@@ -9,7 +9,7 @@ from rsocket.helpers import create_future
 import datetime
 import asyncio
 import logging
-from typing import Optional
+from mlmetrics import cryptoutils
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -46,10 +46,16 @@ async def expose_metrics_rsocket(connection):
         async def request_response(self, payload: Payload):
             try:
                 key = payload.data if payload else None
-                self.log.info(f"In request_response method...{key}")
-                sent = generate_latest(registry)
-                self.log.info(f"Metrics data...{sent}")
-                return create_future(Payload(sent))
+                self.log.info(f"In request_response method...key - {key}")
+
+                decoded_key = cryptoutils.decode_public_key(key)
+                self.log.info(f"Encrypted key - {decoded_key}")
+
+                raw_data = generate_latest(registry)
+                encrypted_payload = cryptoutils.encrypt_payload(raw_data, decoded_key)
+
+                self.log.info(f"Metrics data to encrypt...data:{encrypted_payload.data}\nmetadata:{encrypted_payload.metadata}")
+                return create_future(encrypted_payload)
             except Exception as e:
                 logger.error('Error occurred: ', exc_info=True)
 
@@ -66,23 +72,8 @@ async def expose_metrics_rsocket(connection):
         client.set_handler_using_factory(ClientHandler)
 
         async def run_request_response():
-
             while True:
-                try:
-                    """sent = generate_latest(registry)
-                    if sent:
-                        logger.info(f"Data to send: {sent}")
-                        payload = Payload(sent)
-                        # client.fire_and_forget(payload)
-                        # result = await client.request_response(payload)
-                        # key = result.data
-                        logger.info(f'Data sent.')"""
-                    pass
-                except Exception as e:
-                    logger.error('Error occurred: ', exc_info=True)
-                finally:
-                    # Use SCDF default scrape interval of 10s
-                    await asyncio.sleep(10)
+                await asyncio.sleep(10)
 
         asyncio.run(run_request_response())
 
