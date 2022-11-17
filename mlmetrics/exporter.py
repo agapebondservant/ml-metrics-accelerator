@@ -32,7 +32,7 @@ async def get_rsync_connection(proxy_host, proxy_port):
     return connection
 
 
-async def expose_metrics_rsocket(connection):
+"""async def expose_metrics_rsocket(connection):
     global registry
 
     class ClientHandler(BaseRequestHandler):
@@ -80,7 +80,7 @@ async def expose_metrics_rsocket(connection):
             while True:
                 await asyncio.sleep(10)
 
-        asyncio.run(run_request_response())
+        asyncio.run(run_request_response())"""
 
 
 def prepare_counter(name, description, tags, value):
