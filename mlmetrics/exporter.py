@@ -10,6 +10,7 @@ import datetime
 import asyncio
 import logging
 import nest_asyncio
+
 nest_asyncio.apply()
 
 app = FastAPI()
@@ -86,25 +87,31 @@ def prepare_counter(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Counter(name, description, tags, registry=registry)
-    assigned_metrics[name].set(value)
+    _update_tag_values(assigned_metrics[name], tags).set(value)
 
 
 def prepare_gauge(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Gauge(name, description, tags, registry=registry)
-    assigned_metrics[name].set(value)
+    _update_tag_values(assigned_metrics[name], tags).set(value)
 
 
 def prepare_histogram(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Histogram(name, description, tags, registry=registry)
-    assigned_metrics[name].observe(value)
+    _update_tag_values(assigned_metrics[name], tags).observe(value)
 
 
 def prepare_summary(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Summary(name, description, tags, registry=registry)
-    assigned_metrics[name].observe(value)
+    _update_tag_values(assigned_metrics[name], tags).observe(value)
+
+
+def _update_tag_values(metric, tags={}):
+    for (k, v) in tags.items():
+        metric.labels(k, v)
+    return metric
