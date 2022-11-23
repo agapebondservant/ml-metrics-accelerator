@@ -86,28 +86,28 @@ async def get_rsync_connection(proxy_host, proxy_port):
 def prepare_counter(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Counter(name, description, tags, registry=registry)
+        assigned_metrics[name] = Counter(name, description, tags.keys(), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).set(value)
 
 
 def prepare_gauge(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Gauge(name, description, tags, registry=registry)
+        assigned_metrics[name] = Gauge(name, description, tags.keys(), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).set(value)
 
 
 def prepare_histogram(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Histogram(name, description, tags, registry=registry)
+        assigned_metrics[name] = Histogram(name, description, tags.keys(), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).observe(value)
 
 
 def prepare_summary(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Summary(name, description, tags, registry=registry)
+        assigned_metrics[name] = Summary(name, description, tags.keys(), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).observe(value)
 
 
