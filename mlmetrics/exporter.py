@@ -112,5 +112,6 @@ def prepare_summary(name, description, tags, value):
 
 
 def _update_tag_values(metric, tags={}):
+    logger.info(f"tags: {{**tags}}")
     metric.labels(**tags)
     return metric
