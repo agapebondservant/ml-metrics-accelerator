@@ -112,5 +112,5 @@ def prepare_summary(name, description, tags, value):
 
 
 def _update_tag_values(metric, tags={}):
-    metric.labels(list(tags.values()))
+    metric.labels(*list(tags.values()))
     return metric
