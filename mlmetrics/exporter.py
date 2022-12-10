@@ -86,31 +86,31 @@ async def get_rsync_connection(proxy_host, proxy_port):
 def prepare_counter(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Counter(name, description, labelnames=tags.keys(), registry=registry)
+        assigned_metrics[name] = Counter(name, description, list(tags.keys()), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).set(value)
 
 
 def prepare_gauge(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Gauge(name, description, labelnames=tags.keys(), registry=registry)
+        assigned_metrics[name] = Gauge(name, description, list(tags.keys()), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).set(value)
 
 
 def prepare_histogram(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Histogram(name, description, labelnames=tags.keys(), registry=registry)
+        assigned_metrics[name] = Histogram(name, description, list(tags.keys()), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).observe(value)
 
 
 def prepare_summary(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
-        assigned_metrics[name] = Summary(name, description, labelnames=tags.keys(), registry=registry)
+        assigned_metrics[name] = Summary(name, description, list(tags.keys()), registry=registry)
     _update_tag_values(assigned_metrics[name], tags).observe(value)
 
 
 def _update_tag_values(metric, tags={}):
-    metric.labels(**tags)
+    metric.labels(list(tags.values()))
     return metric
