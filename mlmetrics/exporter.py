@@ -87,30 +87,25 @@ def prepare_counter(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Counter(name, description, labelnames=list(tags.keys()), registry=registry)
-    _update_tag_values(assigned_metrics[name], tags).set(value)
+    assigned_metrics[name].labels(*list(tags.values())).set(value)
 
 
 def prepare_gauge(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Gauge(name, description, labelnames=list(tags.keys()), registry=registry)
-    _update_tag_values(assigned_metrics[name], tags).set(value)
+    assigned_metrics[name].labels(*list(tags.values())).set(value)
 
 
 def prepare_histogram(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Histogram(name, description, labelnames=list(tags.keys()), registry=registry)
-    _update_tag_values(assigned_metrics[name], tags).observe(value)
+    assigned_metrics[name].labels(*list(tags.values())).observe(value)
 
 
 def prepare_summary(name, description, tags, value):
     global registry, assigned_metrics
     if not assigned_metrics.get(name):
         assigned_metrics[name] = Summary(name, description, labelnames=list(tags.keys()), registry=registry)
-    _update_tag_values(assigned_metrics[name], tags).observe(value)
-
-
-def _update_tag_values(metric, tags={}):
-    metric.labels(*list(tags.values()))
-    return metric
+    assigned_metrics[name].labels(*list(tags.values())).observe(value)
