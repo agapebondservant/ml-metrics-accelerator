@@ -9,9 +9,9 @@ from rsocket.helpers import create_future
 import datetime
 import asyncio
 import logging
-import nest_asyncio
+# import nest_asyncio
 
-nest_asyncio.apply()
+# nest_asyncio.apply()
 
 app = FastAPI()
 registry = CollectorRegistry()
