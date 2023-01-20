@@ -1,7 +1,7 @@
 prometheus_client
 fastapi
 rsocket
-asyncio
+# asyncio
 nest_asyncio
 # cryptography #=3.4.8
 python-snappy
